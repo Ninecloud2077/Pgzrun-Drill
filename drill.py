@@ -200,15 +200,4 @@ def on_mouse_down(pos,button):
         Ores['money']=StrP(Ores['money'],t)
         Texts.append(LifeText('Sell!',(Home.x,Home.top-15),20,60))
 
-try:
     pgzrun.go()
-except SyntaxError as e:
-    msgbox('SyntaxError:'+e)
-except ValueError as e:
-    msgbox('ValueError:'+e)
-except NameError as e:
-    msgbox('NameError:'+e)
-except FileNotFoundError as e:
-    msgbox('FileNotFoundError:'+e)
-except:
-    msgbox('Error')
