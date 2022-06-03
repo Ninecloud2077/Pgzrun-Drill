@@ -9,6 +9,8 @@ Land=Actor('land') #地面
 Land.bottomleft=(0,HEIGHT) #地面位置，左下在窗口左下
 Home=Actor('home') #收货点
 Home.bottomleft=Land.topleft #收货点位置，左下角在地面左上
+Help=Actor('help')
+Help.topright=(WIDTH,0)
 
 Ores={'rock':'0','iron':'0','diamond':'0','money':'100'} #矿物数量表
 
@@ -71,35 +73,38 @@ class Worker: #工人的类
         self.Ore.bottom=Land.top-self.Actor.height-10
         
     def draw(self): #绘制工人的相关部分
+        if self.Actor.bottom<Land.top:
+            screen.blit('umbrella',(self.Actor.x-35,self.Actor.top-80))
         self.Actor.draw() #绘制工人
-        if self.FD==-1: #如果工人不往右即挖到矿物
+        if Hills and self.FD==-1: #如果工人不往右即挖到矿物，同时还没通关
             self.Ore.draw() #绘制矿物图标
 
             
     def up(self): #工人的更新部分
         if self.Actor.bottom<Land.top: #如果工人悬空
             self.Actor.y+=0.1 #工人下降0.1px
-        if self.FD==1: #如果工人往右
-                h=Hills[0]
-                if self.Actor.colliderect(h.Actor): #如果与某个山碰撞
-                    h.Count=StrP(h.Count,-self.Count) #山的耐久减1
-                    self.FD=-1 #工人往左
-                    self.Actor.image+='_l' #工人往左的图像
-                    self.Ore.image=HillsAndOres[h.Actor.image] #利用写好的矿物-山关系更改图像
-                    
-        elif self.FD==-1: #如果工人往左
-            self.Ore.x=self.Actor.x #矿物的x坐标设为工人的
-            if self.Actor.colliderect(Home): #如果碰到收货点
-                Ores[self.Ore.image]=StrP(Ores[self.Ore.image],self.Count)
-                self.FD=1 #工人往右
-                self.Actor.image=self.Actor.image[:-2] #工人往右的图像
+        if Hills:
+            if self.FD==1: #如果工人往右
+                    h=Hills[0]
+                    if self.Actor.colliderect(h.Actor): #如果与某个山碰撞
+                        h.Count=StrP(h.Count,-self.Count) #山的耐久减1
+                        self.FD=-1 #工人往左
+                        self.Actor.image+='_l' #工人往左的图像
+                        self.Ore.image=HillsAndOres[h.Actor.image] #利用写好的矿物-山关系更改图像
+                        
+            elif self.FD==-1: #如果工人往左
+                self.Ore.x=self.Actor.x #矿物的x坐标设为工人的
+                if self.Actor.colliderect(Home): #如果碰到收货点
+                    Ores[self.Ore.image]=StrP(Ores[self.Ore.image],self.Count)
+                    self.FD=1 #工人往右
+                    self.Actor.image=self.Actor.image[:-2] #工人往右的图像
 
-        elif not self.FD: #如果工人不移动
-            if self.Actor.bottom<Land.top: #如果悬空
-                self.Actor.y+=5 #工人下降5px
-            else: #如果没有
-                self.FD=1 #开始往右
-                self.Actor.bottom=Land.top #避免落到地下方
+            elif not self.FD: #如果工人不移动
+                if self.Actor.bottom<Land.top: #如果悬空
+                    self.Actor.y+=5 #工人下降5px
+                else: #如果没有
+                    self.FD=1 #开始往右
+                    self.Actor.bottom=Land.top #避免落到地下方
                     
         self.Actor.x+=self.FD*self.Speed #工人依据左右方向移动
 
@@ -131,8 +136,8 @@ class Menu:
         self.Icon.draw()
         screen.draw.text(Ores[self.Icon.image],self.Icon.topright,fontsize=65,color='black')
                
-        
-Hills=[Hill('rhill',500,1500),Hill('ihill',800,3000),Hill('dhill',1150,5500)] #山的系列
+#       
+Hills=[Hill('rhill',500,1500),Hill('ihill',800,3000),Hill('dhill',1150,5000)] #山的系列
 Workers=[Worker()] #工人的系列
 Texts=[] #文本系列
 Menus=[]
@@ -154,43 +159,55 @@ def update(): #更新部分，这一段执行60次/s
     for i in Workers: #逐一翻找工人
         i.up() #工人更新代码
 
+    if not Hills:
+        for i in Workers:
+            i.Actor.y-=5
+            if i.Actor.y<=0:
+                Workers.remove(i)
+
 def draw(): #绘制部分
     screen.fill((255,255,255)) #用白色填满背景
+
+    if not Hills+Workers:
+        screen.draw.text('You Win!',(WIDTH//4,HEIGHT//4),fontsize=100,color='yellow')
+
     for i in Hills+Workers+Texts+Menus: #逐一翻找山和工人
         i.draw() #它们的绘制代码
     Home.draw() #绘制收货点
     Land.draw() #绘制地面
+    Help.draw() #绘制帮助按钮
     
 
 def on_key_down(key):
     global Texts,MenuNo,KeyAndTexts,NumsAndNames
-    for i,j in KeyAndTexts.items():
-        if key==i:
-            if MenuNo==j[1]:
+    if Hills:
+        for i,j in KeyAndTexts.items():
+            if key==i:
+                if MenuNo==j[1]:
+                    Texts=[]
+                    MenuNo=0
+                    break
                 Texts=[]
-                MenuNo=0
+                Msg='Buy {}?\nEnter for yes\nPress again for no'.format(j[0])
+                Texts.append(LifeText(Msg,(WIDTH*0.3,HEIGHT//2),75))
+                MenuNo=j[1]
                 break
+        if key==keys.RETURN and MenuNo:
             Texts=[]
-            Msg='Buy {}?\nEnter for yes\nPress again for no'.format(j[0])
-            Texts.append(LifeText(Msg,(WIDTH*0.3,HEIGHT//2),75))
-            MenuNo=j[1]
-            break
-    if key==keys.RETURN and MenuNo:
-        Texts=[]
-        if NumsAndPrices[MenuNo]>=int(Ores['money']):
-            Texts.append(LifeText('No enough money!',(WIDTH*0.3,HEIGHT//2),75,60))
-        else:
-            n=NumsAndNames[MenuNo]
-            s=n[0]
-            c=n[1]
-            i=n[2]
-            Workers.append(Worker(s,c,i))
-            Texts.append(LifeText('Success!',(WIDTH*0.3,HEIGHT//2),75,60))
-            Ores['money']=StrP(Ores['money'],-NumsAndPrices[MenuNo])
-            MenuNo=0
+            if NumsAndPrices[MenuNo]>int(Ores['money']):
+                Texts.append(LifeText('No enough money!',(WIDTH*0.3,HEIGHT//2),75,60))
+            else:
+                n=NumsAndNames[MenuNo]
+                s=n[0]
+                c=n[1]
+                i=n[2]
+                Workers.append(Worker(s,c,i))
+                Texts.append(LifeText('Success!',(WIDTH*0.3,HEIGHT//2),75,60))
+                Ores['money']=StrP(Ores['money'],-NumsAndPrices[MenuNo])
+                MenuNo=0
 
 def on_mouse_down(pos,button):
-    global Home,Ores,OresAndPrices
+    global Home,Ores,OresAndPrices,MenuNo,Texts
     if button==mouse.LEFT and Home.collidepoint(pos):
         t=0
         for i,j in Ores.items():
@@ -200,4 +217,22 @@ def on_mouse_down(pos,button):
         Ores['money']=StrP(Ores['money'],t)
         Texts.append(LifeText('Sell!',(Home.x,Home.top-15),20,60))
 
-    pgzrun.go()
+    if button==mouse.LEFT and Help.collidepoint(pos):
+        if MenuNo==6:
+            Texts=[]
+            MenuNo=0
+        else:
+            MenuNo=6
+            Texts=[]
+            Msg='''
+Help Menu
+Drill-An afk game
+Buy workers by keyboard 1-5
+Sell ores by click home
+(Rock-1n Iron-2n Diamond-3n)
+Finish all hills off to win
+Have fun!
+'''
+            Texts.append(LifeText(Msg,(150,150),50))
+
+pgzrun.go()
