@@ -12,7 +12,7 @@ Home.bottomleft=Land.topleft #收货点位置，左下角在地面左上
 Help=Actor('help')
 Help.topright=(WIDTH,0)
 
-Ores={'rock':'0','iron':'0','diamond':'0','money':'100'} #矿物数量表
+Ores={'rock':'0','iron':'0','diamond':'0','money':'0'} #矿物数量表
 
 KeyAndTexts={} #按键与工人名字、序号对照表
 KeyAndTexts[keys.K_1]=('worker',1)
