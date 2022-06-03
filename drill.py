@@ -14,38 +14,38 @@ Help.topright=(WIDTH,0)
 
 Ores={'rock':'0','iron':'0','diamond':'0','money':'100'} #矿物数量表
 
-KeyAndTexts={}
+KeyAndTexts={} #按键与工人名字、序号对照表
 KeyAndTexts[keys.K_1]=('worker',1)
 KeyAndTexts[keys.K_2]=('van',2)
 KeyAndTexts[keys.K_3]=('super van',3)
 KeyAndTexts[keys.K_4]=('DRILLER',4)
 KeyAndTexts[keys.K_5]=('SUPER DRILLER',5)
 
-NumsAndNames={}
+NumsAndNames={} #序号与工人参数对照表
 NumsAndNames[1]=(1,1,'worker')
 NumsAndNames[2]=(2,2,'van')
 NumsAndNames[3]=(2,4,'sup_van')
 NumsAndNames[4]=(3,4,'driller')
 NumsAndNames[5]=(5,5,'sup_driller')
 
-NumsAndPrices={}
+NumsAndPrices={} #序号与工人价格对照表
 NumsAndPrices[1]=20
 NumsAndPrices[2]=40
 NumsAndPrices[3]=55
 NumsAndPrices[4]=75
 NumsAndPrices[5]=100
 
-Extra={}
+Extra={} #购买时额外物品对照表，还未实装
 Extra[3]=('iron',1)
 Extra[4]=('iron',3)
 Extra[5]=('diamond',3)
 
-OresAndPrices={}
+OresAndPrices={} #矿物与价格对照表
 OresAndPrices['rock']=1
 OresAndPrices['iron']=2
 OresAndPrices['diamond']=3
 
-MenuNo=0
+MenuNo=0 #菜单序号
 
 
 class Hill: #山的类
@@ -70,11 +70,11 @@ class Worker: #工人的类
         self.Actor=Actor(Img,(Home.right,0)) #工人
         self.FD=0 #工人是否往左右走
         self.Ore=Actor('rock') #工人所背矿物
-        self.Ore.bottom=Land.top-self.Actor.height-10
+        self.Ore.bottom=Land.top-self.Actor.height-10 #矿物底部位置在工人上方10px
         
     def draw(self): #绘制工人的相关部分
-        if self.Actor.bottom<Land.top:
-            screen.blit('umbrella',(self.Actor.x-35,self.Actor.top-80))
+        if self.Actor.bottom<Land.top: #如果工人悬空
+            screen.blit('umbrella',(self.Actor.x-35,self.Actor.top-80)) #绘制降落伞
         self.Actor.draw() #绘制工人
         if Hills and self.FD==-1: #如果工人不往右即挖到矿物，同时还没通关
             self.Ore.draw() #绘制矿物图标
@@ -83,7 +83,7 @@ class Worker: #工人的类
     def up(self): #工人的更新部分
         if self.Actor.bottom<Land.top: #如果工人悬空
             self.Actor.y+=0.1 #工人下降0.1px
-        if Hills:
+        if Hills: #如果还没通关
             if self.FD==1: #如果工人往右
                     h=Hills[0]
                     if self.Actor.colliderect(h.Actor): #如果与某个山碰撞
@@ -109,38 +109,38 @@ class Worker: #工人的类
         self.Actor.x+=self.FD*self.Speed #工人依据左右方向移动
 
 
-class LifeText:
-    def __init__(self,Msg,Pos,Size=20,LifeTime=-1):
-        self.Msg=Msg
-        self.Pos=Pos
-        self.LifeTime=LifeTime
-        self.Size=Size
-        self.Death=0
+class LifeText: #文本的类
+    def __init__(self,Msg,Pos,Size=20,LifeTime=-1): #文本参数
+        self.Msg=Msg #文本
+        self.Pos=Pos #位置
+        self.LifeTime=LifeTime #持续时间，-1表示永久存在
+        self.Size=Size #大小
+        self.Death=0 #时间是否结束
 
-    def draw(self):
-            screen.draw.text(self.Msg,self.Pos,color='black',fontsize=self.Size)
+    def draw(self): #绘制文本部分
+            screen.draw.text(self.Msg,self.Pos,color='black',fontsize=self.Size) #依据文本、位置、大小绘制黑色文本
             
-    def up(self):
-        self.LifeTime-=1
-        if not self.LifeTime:
-            self.Death=1
+    def up(self): #文本更新部分
+        self.LifeTime-=1 #持续时间-1
+        if not self.LifeTime: #如果时间到了
+            self.Death=1 #表示时间结束
 
 
-class Menu:
-    def __init__(self,Pos,Img):
-        self.Pos=Pos
-        self.Icon=Actor(Img)
-        self.Icon.topleft=Pos
+class Menu: #菜单类，即矿物和钱的显示
+    def __init__(self,Pos,Img): #菜单参数
+        self.Pos=Pos #位置
+        self.Icon=Actor(Img) #图标
+        self.Icon.topleft=Pos #设置位置到左上角
 
-    def draw(self):
-        self.Icon.draw()
-        screen.draw.text(Ores[self.Icon.image],self.Icon.topright,fontsize=65,color='black')
+    def draw(self): #绘制部分
+        self.Icon.draw() #绘制图标
+        screen.draw.text(Ores[self.Icon.image],self.Icon.topright,fontsize=65,color='black') #绘制文本，文字为矿物表中对应的文本，颜色为黑，左上位置在图标右上角，大小65
                
 #       
 Hills=[Hill('rhill',500,1500),Hill('ihill',800,3000),Hill('dhill',1150,5000)] #山的系列
 Workers=[Worker()] #工人的系列
 Texts=[] #文本系列
-Menus=[]
+Menus=[] #四个菜单
 Menus.append(Menu((0,HEIGHT//2-50),'rock'))
 Menus.append(Menu((0,HEIGHT//2),'iron'))
 Menus.append(Menu((0,HEIGHT//2+50),'diamond'))
@@ -152,24 +152,24 @@ def update(): #更新部分，这一段执行60次/s
         i.up() #山的更新代码
         if i.Death: #如果山没了
             Hills.remove(i) #删掉山
-    for i in Texts:
+    for i in Texts: #文本更新，和上面山的工作原理相同
         i.up()
         if i.Death:
             Texts.remove(i)
     for i in Workers: #逐一翻找工人
         i.up() #工人更新代码
 
-    if not Hills:
-        for i in Workers:
-            i.Actor.y-=5
-            if i.Actor.y<=0:
-                Workers.remove(i)
+    if not Hills: #如果通关
+        for i in Workers: #逐一翻找工人
+            i.Actor.y-=5 #令其上浮5px
+            if i.Actor.top<=0: #如果到顶
+                Workers.remove(i) #将其删除
 
 def draw(): #绘制部分
     screen.fill((255,255,255)) #用白色填满背景
 
-    if not Hills+Workers:
-        screen.draw.text('You Win!',(WIDTH//4,HEIGHT//4),fontsize=100,color='yellow')
+    if not Hills+Workers: #如果山和工人都没有了
+        screen.draw.text('You Win!',(WIDTH//4,HEIGHT//4),fontsize=100,color='yellow') #绘制胜利文本，金色，大小100
 
     for i in Hills+Workers+Texts+Menus: #逐一翻找山和工人
         i.draw() #它们的绘制代码
@@ -178,52 +178,52 @@ def draw(): #绘制部分
     Help.draw() #绘制帮助按钮
     
 
-def on_key_down(key):
-    global Texts,MenuNo,KeyAndTexts,NumsAndNames
-    if Hills:
-        for i,j in KeyAndTexts.items():
-            if key==i:
-                if MenuNo==j[1]:
-                    Texts=[]
-                    MenuNo=0
-                    break
-                Texts=[]
-                Msg='Buy {}?\nEnter for yes\nPress again for no'.format(j[0])
-                Texts.append(LifeText(Msg,(WIDTH*0.3,HEIGHT//2),75))
-                MenuNo=j[1]
-                break
-        if key==keys.RETURN and MenuNo:
-            Texts=[]
-            if NumsAndPrices[MenuNo]>int(Ores['money']):
-                Texts.append(LifeText('No enough money!',(WIDTH*0.3,HEIGHT//2),75,60))
-            else:
-                n=NumsAndNames[MenuNo]
+def on_key_down(key): #当有按键按下时执行此段
+    global Texts,MenuNo,KeyAndTexts,NumsAndNames #把这些变量声明为全局变量，否则不能用
+    if Hills: #如果没通关
+        for i,j in KeyAndTexts.items(): #逐一翻找键与名字对应表
+            if key==i: #如果按下的键刚好是翻找的
+                if MenuNo==j[1]: #如果菜单标号正好是这个
+                    Texts=[] #代表关闭，先清空文本
+                    MenuNo=0 #菜单标号设为0
+                    break #不再翻找
+                Texts=[] #如果菜单标号不是，先清空文本
+                Msg='Buy {}?\nEnter for yes\nPress again for no'.format(j[0]) #即将显示的文本，大括号会被转换为对应表中的名字
+                Texts.append(LifeText(Msg,(WIDTH*0.3,HEIGHT//2),75)) #在宽度约1/3，高1/2个屏幕处绘制大小75的文本
+                MenuNo=j[1] #文本标号根据对应表更换
+                break #不再翻找
+        if key==keys.RETURN and MenuNo: #如果按下回车并且标号不是0
+            Texts=[] #先清空文本
+            if NumsAndPrices[MenuNo]>int(Ores['money']): #如果价格比钱高
+                Texts.append(LifeText('No enough money!',(WIDTH*0.3,HEIGHT//2),75,60)) #不能购买
+            else: #如果价格比钱低或者相等
+                n=NumsAndNames[MenuNo] #获取对应工人参数并逐一存储
                 s=n[0]
                 c=n[1]
                 i=n[2]
-                Workers.append(Worker(s,c,i))
-                Texts.append(LifeText('Success!',(WIDTH*0.3,HEIGHT//2),75,60))
-                Ores['money']=StrP(Ores['money'],-NumsAndPrices[MenuNo])
-                MenuNo=0
+                Workers.append(Worker(s,c,i)) #用参数创建工人
+                Texts.append(LifeText('Success!',(WIDTH*0.3,HEIGHT//2),75,60)) #成功购买
+                Ores['money']=StrP(Ores['money'],-NumsAndPrices[MenuNo]) #扣除钱
+                MenuNo=0 #菜单标号设为0
 
-def on_mouse_down(pos,button):
-    global Home,Ores,OresAndPrices,MenuNo,Texts
-    if button==mouse.LEFT and Home.collidepoint(pos):
-        t=0
-        for i,j in Ores.items():
-            if i!='money':
-                t+=int(j)*OresAndPrices[i]
-                Ores[i]='0'
-        Ores['money']=StrP(Ores['money'],t)
-        Texts.append(LifeText('Sell!',(Home.x,Home.top-15),20,60))
+def on_mouse_down(pos,button): #当鼠标按下时执行此段
+    global Home,Ores,OresAndPrices,MenuNo,Texts #声明全局变量
+    if button==mouse.LEFT and Home.collidepoint(pos): #如果左键按下并且鼠标碰到收货点
+        t=0 #存储所卖矿物价格
+        for i,j in Ores.items(): #逐一翻找钱
+            if i!='money': #如果翻到的不是钱本身
+                t+=int(j)*OresAndPrices[i] #利用对应表计算钱
+                Ores[i]='0' #把矿物设为0
+        Ores['money']=StrP(Ores['money'],t) #金钱增加
+        Texts.append(LifeText('Sell!',(Home.x,Home.top-15),20,60)) #成功售卖
 
-    if button==mouse.LEFT and Help.collidepoint(pos):
-        if MenuNo==6:
-            Texts=[]
-            MenuNo=0
-        else:
-            MenuNo=6
-            Texts=[]
+    if button==mouse.LEFT and Help.collidepoint(pos): #如果按下左键并且碰到帮助按钮
+        if MenuNo==6: #如果菜单标号为6表示退出帮助
+            Texts=[] #清空文本
+            MenuNo=0 #菜单标号设为0
+        else: #如果不是
+            MenuNo=6 #菜单标号设为6
+            Texts=[] #清空文本
             Msg='''
 Help Menu
 Drill-An afk game
@@ -232,7 +232,7 @@ Sell ores by click home
 (Rock-1n Iron-2n Diamond-3n)
 Finish all hills off to win
 Have fun!
-'''
-            Texts.append(LifeText(Msg,(150,150),50))
+''' #帮助文本
+            Texts.append(LifeText(Msg,(150,150),50)) #将其显示到屏幕上
 
 pgzrun.go()
