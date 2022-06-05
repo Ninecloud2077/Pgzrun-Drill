@@ -29,11 +29,11 @@ NumsAndNames[4]=(3,4,'driller')
 NumsAndNames[5]=(5,5,'sup_driller')
 
 NumsAndPrices={} #序号与工人价格对照表
-NumsAndPrices[1]=20
-NumsAndPrices[2]=40
-NumsAndPrices[3]=55
-NumsAndPrices[4]=75
-NumsAndPrices[5]=100
+NumsAndPrices[1]='20'
+NumsAndPrices[2]='40'
+NumsAndPrices[3]='55'
+NumsAndPrices[4]='75'
+NumsAndPrices[5]='100'
 
 Extra={} #购买时额外物品对照表，还未实装
 Extra[3]=('iron',1)
@@ -179,7 +179,7 @@ def draw(): #绘制部分
     
 
 def on_key_down(key): #当有按键按下时执行此段
-    global Texts,MenuNo,KeyAndTexts,NumsAndNames #把这些变量声明为全局变量，否则不能用
+    global Texts,MenuNo,KeyAndTexts,NumsAndNames,NumsAndPrices #把这些变量声明为全局变量，否则不能用
     if Hills: #如果没通关
         for i,j in KeyAndTexts.items(): #逐一翻找键与名字对应表
             if key==i: #如果按下的键刚好是翻找的
@@ -187,14 +187,15 @@ def on_key_down(key): #当有按键按下时执行此段
                     Texts=[] #代表关闭，先清空文本
                     MenuNo=0 #菜单标号设为0
                     break #不再翻找
-                Texts=[] #如果菜单标号不是，先清空文本
-                Msg='Buy {}?\nEnter for yes\nPress again for no'.format(j[0]) #即将显示的文本，大括号会被转换为对应表中的名字
-                Texts.append(LifeText(Msg,(WIDTH*0.3,HEIGHT//2),75)) #在宽度约1/3，高1/2个屏幕处绘制大小75的文本
-                MenuNo=j[1] #文本标号根据对应表更换
-                break #不再翻找
+                else:
+                    Texts=[] #如果菜单标号不是，先清空文本
+                    MenuNo=j[1] #文本标号根据对应表更换
+                    Msg='Buy {}({}N)?\nEnter for yes\nPress again for no'.format(j[0],NumsAndPrices[MenuNo]) #即将显示的文本，大括号会被转换为对应表中的名字
+                    Texts.append(LifeText(Msg,(WIDTH*0.3,HEIGHT//2),75)) #在宽度约1/3，高1/2个屏幕处绘制大小75的文本
+                    break #不再翻找
         if key==keys.RETURN and MenuNo: #如果按下回车并且标号不是0
             Texts=[] #先清空文本
-            if NumsAndPrices[MenuNo]>int(Ores['money']): #如果价格比钱高
+            if int(NumsAndPrices[MenuNo])>int(Ores['money']): #如果价格比钱高
                 Texts.append(LifeText('No enough money!',(WIDTH*0.3,HEIGHT//2),75,60)) #不能购买
             else: #如果价格比钱低或者相等
                 n=NumsAndNames[MenuNo] #获取对应工人参数并逐一存储
@@ -203,7 +204,7 @@ def on_key_down(key): #当有按键按下时执行此段
                 i=n[2]
                 Workers.append(Worker(s,c,i)) #用参数创建工人
                 Texts.append(LifeText('Success!',(WIDTH*0.3,HEIGHT//2),75,60)) #成功购买
-                Ores['money']=StrP(Ores['money'],-NumsAndPrices[MenuNo]) #扣除钱
+                Ores['money']=StrP(Ores['money'],-int(NumsAndPrices[MenuNo])) #扣除钱
                 MenuNo=0 #菜单标号设为0
 
 def on_mouse_down(pos,button): #当鼠标按下时执行此段
