@@ -1,6 +1,5 @@
 import pgzrun
 from selfmaths import *
-from easygui import msgbox
 
 WIDTH,HEIGHT=1250,800 #窗口长1250px，宽800px
 
@@ -36,9 +35,9 @@ NumsAndPrices[4]='75'
 NumsAndPrices[5]='100'
 
 Extra={} #购买时额外物品对照表，还未实装
-Extra[3]=('iron',1)
-Extra[4]=('iron',3)
-Extra[5]=('diamond',3)
+Extra[3]=('iron','1')
+Extra[4]=('iron','3')
+Extra[5]=('diamond','3')
 
 OresAndPrices={} #矿物与价格对照表
 OresAndPrices['rock']=1
@@ -191,12 +190,21 @@ def on_key_down(key): #当有按键按下时执行此段
                     Texts=[] #如果菜单标号不是，先清空文本
                     MenuNo=j[1] #文本标号根据对应表更换
                     Msg='Buy {}({}N)?\nEnter for yes\nPress again for no'.format(j[0],NumsAndPrices[MenuNo]) #即将显示的文本，大括号会被转换为对应表中的名字
+                    e=Extra.get(MenuNo) #从额外表中安全获取值
+                    if e: #如果获取到
+                        Msg='Buy {}?\n({}N and {}*{})\nEnter for yes\nPress again for no'.format(j[0],NumsAndPrices[MenuNo],e[0],e[1]) #更改文本以显示额外物品
                     Texts.append(LifeText(Msg,(WIDTH*0.3,HEIGHT//2),75)) #在宽度约1/3，高1/2个屏幕处绘制大小75的文本
                     break #不再翻找
         if key==keys.RETURN and MenuNo: #如果按下回车并且标号不是0
             Texts=[] #先清空文本
-            if int(NumsAndPrices[MenuNo])>int(Ores['money']): #如果价格比钱高
-                Texts.append(LifeText('No enough money!',(WIDTH*0.3,HEIGHT//2),75,60)) #不能购买
+            e=Extra.get(MenuNo) #安全获取额外值
+            if e: #如果获取到
+                if int(e[1])>int(Ores[e[0]]): #如果当前矿不够
+                    e=1 #表示不能
+                else: #否则
+                    e=0 #表示能
+            if int(NumsAndPrices[MenuNo])>int(Ores['money']) or e: #如果价格比钱高
+                Texts.append(LifeText('No enough money or ores!',(WIDTH*0.3,HEIGHT//2),75,60)) #不能购买
             else: #如果价格比钱低或者相等
                 n=NumsAndNames[MenuNo] #获取对应工人参数并逐一存储
                 s=n[0]
@@ -230,7 +238,7 @@ Help Menu
 Drill-An afk game
 Buy workers by keyboard 1-5
 Sell ores by click home
-(Rock-1n Iron-2n Diamond-3n)
+(Rock-1N Iron-2N Diamond-3N)
 Finish all hills off to win
 Have fun!
 ''' #帮助文本
